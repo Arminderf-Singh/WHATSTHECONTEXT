@@ -12,6 +12,41 @@ load_dotenv()
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 
 # List of social media domains for filtering
+
+SOURCE_MAPPINGS = {
+    "article": "site:nytimes.com OR site:washingtonpost.com OR site:theguardian.com",
+    "book": "intitle:\"book\" OR intext:\"published in\"",
+    "video": "site:youtube.com OR site:vimeo.com",
+    "movie": "intitle:\"movie\" OR intext:\"film\" OR intext:\"IMDb\"",
+    "study": "site:researchgate.net OR site:jstor.org OR site:academia.edu",
+    "social": "site:twitter.com OR site:tiktok.com OR site:instagram.com"
+}
+
+async def search_text_sources(query: str, sources: list = None):
+    """Search text sources with filters"""
+    # Build base query
+    base_query = f'"{query}"'
+    
+    # Add source filters if provided
+    source_filters = []
+    if sources:
+        for source in sources:
+            if source in SOURCE_MAPPINGS:
+                source_filters.append(SOURCE_MAPPINGS[source])
+    
+    # Combine filters
+    full_query = base_query
+    if source_filters:
+        full_query += " (" + " OR ".join(source_filters) + ")"
+    
+    params = {
+        "engine": "google",
+        "q": full_query,
+        "api_key": SERPAPI_KEY,
+        "num": 15
+    }
+
+    
 SOCIAL_MEDIA_DOMAINS = [
     'facebook.com', 'instagram.com', 'twitter.com', 
     'tiktok.com', 'pinterest.com', 'reddit.com'
@@ -148,3 +183,5 @@ def parse_image_results(data):
         }
         for item in data.get("image_results", [])[:10]
     ]
+
+

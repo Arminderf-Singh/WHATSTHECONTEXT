@@ -1,5 +1,5 @@
-
 import { useState } from 'react';
+import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
 import TextSearch from './components/TextSearch';
 import ImageSearch from './components/ImageSearch';
@@ -7,12 +7,44 @@ import SearchResults from './components/SearchResults';
 
 function App() {
   const [activeTab, setActiveTab] = useState('text');
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [activeMethod, setActiveMethod] = useState('url');
+  const [videoPreview, setVideoPreview] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoUrl, setVideoUrl] = useState('');
 
   const handleResults = (data) => {
-    setResults(data.results || []);
+    setResults(data);
     setLoading(false);
+  };
+
+  const handleVideoFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setVideoFile(file);
+    setVideoPreview(URL.createObjectURL(file));
+  };
+
+  const handleVideoSubmit = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setResults({
+        video: {
+          title: "Full Video Context Found",
+          source: "YouTube",
+          url: "https://youtube.com/full-video",
+          matches: [
+            { time: "2:15", context: "Introduction to the main topic" },
+            { time: "5:42", context: "Detailed explanation of concept" }
+          ]
+        }
+      });
+      setLoading(false);
+    }, 1500);
   };
 
   return (
@@ -121,15 +153,80 @@ function App() {
                 onResults={handleResults}
               />
             ) : (
-              <div className="tab-pane active">
+              <div className="video-tab-content">
                 <h3>Video Clip Context</h3>
-                <p className="text-gray-400 mb-4">Enter a video URL to find the original context</p>
-                <input 
-                  type="text" 
-                  className="search-input" 
-                  placeholder="Paste a video URL (YouTube, TikTok, etc.)"
-                />
-                <button className="search-btn">Find Full Video</button>
+                <p className="text-gray-400 mb-4">Find the original source of a video clip by URL or upload</p>
+
+                <div className="method-tabs">
+                  <button 
+                    className={`method-tab ${activeMethod === 'url' ? 'active' : ''}`}
+                    onClick={() => setActiveMethod('url')}
+                  >
+                    Paste URL
+                  </button>
+                  <button 
+                    className={`method-tab ${activeMethod === 'upload' ? 'active' : ''}`}
+                    onClick={() => setActiveMethod('upload')}
+                  >
+                    Upload Video
+                  </button>
+                </div>
+
+                <form onSubmit={handleVideoSubmit}>
+                  {activeMethod === 'url' ? (
+                    <div className="video-search-form">
+                      <input 
+                        type="text" 
+                        className="search-input" 
+                        placeholder="Paste a video URL (YouTube, TikTok, etc.)"
+                        value={videoUrl}
+                        onChange={(e) => setVideoUrl(e.target.value)}
+                      />
+                      <button 
+                        type="submit" 
+                        className="search-btn"
+                        disabled={!videoUrl.trim()}
+                      >
+                        {loading ? 'Searching...' : 'Find Full Video'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <label 
+                        htmlFor="video-upload" 
+                        className="video-upload-area"
+                      >
+                        {videoPreview ? (
+                          <video 
+                            src={videoPreview} 
+                            className="video-preview"
+                            controls
+                          />
+                        ) : (
+                          <div className="video-upload-placeholder">
+                            <ArrowUpTrayIcon className="w-12 h-12 mb-3" />
+                            <p className="font-medium">Click to upload video</p>
+                            <p className="text-sm mt-1">MP4 or MOV (Max 50MB)</p>
+                          </div>
+                        )}
+                        <input 
+                          id="video-upload" 
+                          type="file" 
+                          className="hidden" 
+                          accept="video/*"
+                          onChange={handleVideoFileChange}
+                        />
+                      </label>
+                      <button 
+                        type="submit" 
+                        className="search-btn"
+                        disabled={!videoFile}
+                      >
+                        {loading ? 'Searching...' : 'Find Full Video'}
+                      </button>
+                    </div>
+                  )}
+                </form>
               </div>
             )}
           </div>
@@ -137,73 +234,16 @@ function App() {
       </section>
 
       {results && (
-  <section className="results-section mt-12">
-    <div className="section-header">
-      <h2>Search Results</h2>
-    </div>
-    <div className="results-container">
-      <SearchResults results={results} />
-    </div>
-  </section>
-)}
+        <section className="results-section">
+          <div className="section-header">
+            <h2>Search Results</h2>
+          </div>
+          <div className="results-container">
+            <SearchResults results={results} />
+          </div>
+        </section>
+      )}
 
-      
-      {/* Delete Options Section */}
-      <section className="delete-options">
-        <div className="section-header">
-          <h2>Content Management</h2>
-          <p>Take control of your online presence with our powerful tools</p>
-        </div>
-        
-        <div className="options-card">
-          <h3>
-            <i className="fas fa-trash-alt text-redact-accent"></i>
-            Mass delete your Facebook posts
-          </h3>
-          <p>The only platform that allows you to automatically clean up your old posts from services like Twitter, Facebook, Discord, and more, all in one place.</p>
-          
-          <div className="mt-6">
-            <h4 className="text-lg font-bold mb-3">Delete Options</h4>
-            <ul>
-              <li>
-                <i className="fas fa-comment text-redact-accent"></i>
-                Posts
-              </li>
-              <li>
-                <i className="fas fa-comment-dots text-redact-accent"></i>
-                Comments
-              </li>
-              <li>
-                <i className="fas fa-video text-redact-accent"></i>
-                Live
-              </li>
-            </ul>
-          </div>
-          
-          <div className="mt-6">
-            <h4 className="text-lg font-bold mb-3">Platform Integration</h4>
-            <div className="platforms">
-              <div className="platform">
-                <i className="fab fa-twitter text-blue-400"></i>
-                Twitter
-              </div>
-              <div className="platform">
-                <i className="fab fa-facebook text-blue-600"></i>
-                Facebook
-              </div>
-              <div className="platform">
-                <i className="fab fa-discord text-indigo-500"></i>
-                Discord
-              </div>
-              <div className="platform">
-                <i className="fab fa-instagram text-pink-500"></i>
-                Instagram
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
       {/* Footer */}
       <footer>
         <div className="footer-links">
@@ -213,7 +253,7 @@ function App() {
           <a href="#">Documentation</a>
           <a href="#">API</a>
         </div>
-        <p>© 2023 WhatsTheContext. All rights reserved. Designed to match Redact.dev theme.</p>
+        <p>© 2025 WhatsTheContext. All rights reserved. </p>
       </footer>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowUpTrayIcon, FaceSmileIcon } from '@heroicons/react/24/outline';
 
+
 export default function ImageSearch({ onSearchStart, onResults }) {
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
@@ -60,25 +61,25 @@ export default function ImageSearch({ onSearchStart, onResults }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="image-search-container">
       <div className="mb-4">
-        <label className="block mb-2 font-medium">
+        <label className="image-upload-label">
           Upload image or screenshot
         </label>
         
         <label 
           htmlFor="image-upload" 
-          className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer bg-gray-900 hover:bg-gray-800 transition-colors"
+          className={`upload-area ${preview ? 'has-preview' : ''}`}
         >
           {preview ? (
             <img 
               src={preview} 
               alt="Preview" 
-              className="h-full w-full object-contain p-4"
+              className="preview-image"
               onLoad={() => URL.revokeObjectURL(preview)}
             />
           ) : (
-            <div className="flex flex-col items-center text-gray-400">
+            <div className="upload-placeholder">
               <ArrowUpTrayIcon className="w-12 h-12 mb-3" />
               <p className="font-medium">Click to upload</p>
               <p className="text-sm mt-1">PNG, JPG, or JPEG (Max 5MB)</p>
@@ -95,30 +96,27 @@ export default function ImageSearch({ onSearchStart, onResults }) {
       </div>
       
       {/* Search Options */}
-      <div className="mb-4 bg-gray-900 p-4 rounded-lg">
+      <div className="search-options">
         <h3 className="font-medium mb-2">Search Options</h3>
         
-        <div className="flex items-center mb-2">
+        <div className="option-item">
           <input
             type="checkbox"
             id="search-faces"
             checked={options.searchFaces}
             onChange={(e) => setOptions({...options, searchFaces: e.target.checked})}
-            className="mr-2"
           />
           <label htmlFor="search-faces" className="flex items-center">
-            <FaceSmileIcon className="w-5 h-5 mr-1" />
             Detect and search faces
           </label>
         </div>
         
-        <div className="flex items-center">
+        <div className="option-item">
           <input
             type="checkbox"
             id="search-social"
             checked={options.searchSocial}
             onChange={(e) => setOptions({...options, searchSocial: e.target.checked})}
-            className="mr-2"
           />
           <label htmlFor="search-social">
             Include social media results (Instagram, Facebook)
@@ -128,7 +126,7 @@ export default function ImageSearch({ onSearchStart, onResults }) {
       
       <button 
         type="submit" 
-        className="redact-btn w-full flex justify-center"
+        className="redact-btn"
         disabled={!file}
       >
         Reverse Image Search
